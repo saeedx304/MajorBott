@@ -1,3 +1,5 @@
+from ..config import settings
+
 headers = {
     'Host': 'major.glados.app',
     'Pragma': 'no-cache',
@@ -10,6 +12,7 @@ headers = {
     'Accept': 'application/json, text/plain, */*',
     'Content-Type': 'application/json',
     'Origin': 'https://major.glados.app',
+    'Referer': f'https://t.me/major/start?startapp={settings.REF_ID}',
     'Sec-Fetch-Site': 'same-origin',
     'Sec-Fetch-Mode': 'cors',
     'Sec-Fetch-Dest': 'empty',
