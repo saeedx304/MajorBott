@@ -170,40 +170,42 @@ class Tapper:
         while True:
             is_auth, user_data = await self.login(http_client=http_client, init_data=init_data)
             if not is_auth:
-                logger.info(f"{self.session_name} | Failed login")
+                logger.info(f"{self.session_name} | <r>Failed login</r>")
                 sleep_time = random.randint(settings.SLEEP_TIME[0], settings.SLEEP_TIME[1])
-                logger.info(f"{self.session_name} | Sleep {sleep_time}s")
+                logger.info(f"{self.session_name} | Sleep <y>{sleep_time}s</y>")
                 await asyncio.sleep(delay=sleep_time)
+            else:
+                logger.info(f"{self.session_name} | <y>⭐ Login successful</y>")
             user = user_data.get('user')
             rating = user.get('rating')
             id = user.get('id')
             squad_id = user.get('squad_id')
             rating = await self.get_detail(http_client=http_client)
-            logger.info(f"{self.session_name} | ID: {user.get('id')} | points : {rating}")
+            logger.info(f"{self.session_name} | ID: <y>{user.get('id')}</y> | Points : <y>{rating}</y>")
             if squad_id is None:
                 await self.join_squad(http_client=http_client)
                 squad_id = "2237841784"
                 await asyncio.sleep(1)
                 
             data_squad = await self.get_squad(http_client=http_client, squad_id=squad_id)
-            logger.info(f"{self.session_name} | Squad : {data_squad.get('name')} | Member : {data_squad.get('members_count')} | Ratings : {data_squad.get('rating')}")    
+            logger.info(f"{self.session_name} | Squad : <y>{data_squad.get('name')}</y> | Member : <y>{data_squad.get('members_count')}</y> | Ratings : <y>{data_squad.get('rating')}</y>")    
             
             data_visit = await self.visit(http_client=http_client)
             if data_visit is not None:
                 await asyncio.sleep(1)
-                logger.info(f"{self.session_name} | Daily Streak : {data_visit.get('streak')}")
+                logger.info(f"{self.session_name} | Daily Streak : <y>{data_visit.get('streak')}</y>")
             
             coins = await self.claim_coins(http_client=http_client)
             if coins > 0:
                 await asyncio.sleep(1)
-                logger.info(f"{self.session_name} | Success Claim {coins} Coins ")
+                logger.info(f"{self.session_name} | Success Claim <y>{coins}</y> Coins ")
             
             data_roulette = await self.roulette(http_client=http_client)
             if data_roulette is not None:
                 reward = data_roulette.get('rating_award')
                 if reward is not None:
                     await asyncio.sleep(1)
-                    logger.info(f"{self.session_name} | Reward Roulette : {reward}")
+                    logger.info(f"{self.session_name} | Reward Roulette : <y>{reward}</y>")
             
             await asyncio.sleep(1)
             data_daily = await self.get_daily(http_client=http_client)
@@ -215,7 +217,7 @@ class Tapper:
                         data_done = await self.done_tasks(http_client=http_client, task_id=id)
                         if data_done is not None and data_done.get('is_completed') is True:
                             await asyncio.sleep(1)
-                            logger.info(f"{self.session_name} | Daily Task : {daily.get('title')} | Reward : {daily.get('award')}")
+                            logger.info(f"{self.session_name} | Daily Task : <y>{daily.get('title')}</y> | Reward : <y>{daily.get('award')}</y>")
             
             data_task = await self.get_tasks(http_client=http_client)
             if data_task is not None:
@@ -224,10 +226,10 @@ class Tapper:
                     data_done = await self.done_tasks(http_client=http_client, task_id=id)
                     if data_done is not None and data_done.get('is_completed') is True:
                         await asyncio.sleep(1)
-                        logger.info(f"{self.session_name} | Task : {task.get('title')} | Reward : {task.get('award')}")
+                        logger.info(f"{self.session_name} | Task : <y>{daily.get('title')}</y> | Reward : <y>{daily.get('award')}</y>")
             
             sleep_time = random.randint(settings.SLEEP_TIME[0], settings.SLEEP_TIME[1])
-            logger.info(f"{self.session_name} | Sleep {sleep_time}s")
+            logger.info(f"{self.session_name} | Sleep <y>{sleep_time}s</y>")
             await asyncio.sleep(delay=sleep_time)
             
             
