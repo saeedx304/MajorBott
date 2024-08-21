@@ -80,7 +80,7 @@ class Tapper:
             if self.tg_client.is_connected:
                 await self.tg_client.disconnect()
 
-            return tg_web_data
+            return ref_id, tg_web_data
 
         except InvalidSession as error:
             raise error
@@ -98,7 +98,8 @@ class Tapper:
             return await response.json()
     
     @error_handler
-    async def login(self, http_client, init_data):
+    async def login(self, http_client, init_data, ref_id):
+        http_client.headers['Referer'] = f'https://major.glados.app/?tgWebAppStartParam={ref_id}'
         response = await self.make_request(http_client, 'POST', endpoint="/auth/tg/", json={"init_data": init_data})
         access_token = response.get("access_token")
         if access_token:
@@ -166,9 +167,9 @@ class Tapper:
         if settings.FAKE_USERAGENT:
                 http_client.headers["User-Agent"] = generate_random_user_agent(device_type='android', browser_type='chrome')
 
-        init_data = await self.get_tg_web_data(proxy=self.proxy)
+        ref_id, init_data = await self.get_tg_web_data(proxy=self.proxy)
         while True:
-            is_auth, user_data = await self.login(http_client=http_client, init_data=init_data)
+            is_auth, user_data = await self.login(http_client=http_client, init_data=init_data, ref_id=ref_id)
             if not is_auth:
                 logger.info(f"{self.session_name} | <r>Failed login</r>")
                 sleep_time = random.randint(settings.SLEEP_TIME[0], settings.SLEEP_TIME[1])
