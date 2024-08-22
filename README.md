@@ -24,7 +24,7 @@
 |  **API_ID / API_HASH**  |        Platform data from which to run the Telegram session (default - android)        |
 | **REF_ID**           |                   Your referral id after startapp= (Your telegram ID)                  |
 | **FAKE_USER AGENT** |                   Use a fake user agent for sessions (True / False)                    |
-| **SLEEP_TIME**          |                   Delay before the next lap (e.g. [1800.3600])                         |
+| **SLEEP_TIME**          |                   Delay before the next lap (e.g. [1800, 3600])                         |
 | **USE_PROXY_FROM_FILE** |      Whether to use a proxy from the `bot/config/proxies.txt` file (True / False)      |
 
 ## Quick Start 📚
