@@ -61,7 +61,6 @@ run.sh
 
 # Linux manual installation
 ```shell
-sudo sh install.sh
 python3 -m venv venv
 source venv/bin/activate
 pip3 install -r requirements.txt
