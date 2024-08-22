@@ -61,7 +61,7 @@ class Tapper:
                 
             peer = await self.tg_client.resolve_peer('major')
             
-            ref_id = (settings.REF_ID if not settings.REF_ID else "339631649") if random.randint(0, 100) <= 70 else "339631649"
+            ref_id = (settings.REF_ID if settings.REF_ID else "339631649") if random.randint(0, 100) <= 70 else "339631649"
             
             web_view = await self.tg_client.invoke(RequestAppWebView(
                 peer=peer,
@@ -123,6 +123,10 @@ class Tapper:
     @error_handler
     async def visit(self, http_client):
         return await self.make_request(http_client, 'POST', endpoint="/user-visits/visit/?")
+        
+    @error_handler
+    async def streak(self, http_client):
+        return await self.make_request(http_client, 'POST', endpoint="/user-visits/streak/?")
     
     @error_handler
     async def roulette(self, http_client):
@@ -195,6 +199,8 @@ class Tapper:
             if data_visit is not None:
                 await asyncio.sleep(1)
                 logger.info(f"{self.session_name} | Daily Streak : <y>{data_visit.get('streak')}</y>")
+            
+            await self.streak(http_client=http_client)
             
             coins = await self.claim_coins(http_client=http_client)
             if coins > 0:
