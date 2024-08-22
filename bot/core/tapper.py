@@ -183,13 +183,13 @@ class Tapper:
 
         ref_id, init_data = await self.get_tg_web_data()
         while True:
-            if http_client.closed:
-                if proxy_conn:
-                    if not proxy_conn.closed:
-                        proxy_conn.close()
+            # if http_client.closed:
+                # if proxy_conn:
+                    # if not proxy_conn.closed:
+                        # proxy_conn.close()
 
-                proxy_conn = ProxyConnector().from_url(self.proxy) if self.proxy else None
-                http_client = CloudflareScraper(headers=headers, connector=proxy_conn)
+                # proxy_conn = ProxyConnector().from_url(self.proxy) if self.proxy else None
+                # http_client = CloudflareScraper(headers=headers, connector=proxy_conn)
             is_auth, user_data = await self.login(http_client=http_client, init_data=init_data, ref_id=ref_id)
             if not is_auth:
                 logger.info(f"{self.session_name} | <r>Failed login</r>")
@@ -250,10 +250,10 @@ class Tapper:
                         await asyncio.sleep(1)
                         logger.info(f"{self.session_name} | Task : <y>{daily.get('title')}</y> | Reward : <y>{daily.get('award')}</y>")
             
-            await http_client.close()
-            if proxy_conn:
-                if not proxy_conn.closed:
-                    proxy_conn.close()
+            # await http_client.close()
+            # if proxy_conn:
+                # if not proxy_conn.closed:
+                    # proxy_conn.close()
             sleep_time = random.randint(settings.SLEEP_TIME[0], settings.SLEEP_TIME[1])
             logger.info(f"{self.session_name} | Sleep <y>{sleep_time}s</y>")
             await asyncio.sleep(delay=sleep_time)
