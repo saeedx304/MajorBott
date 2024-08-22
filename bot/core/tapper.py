@@ -1,13 +1,13 @@
 import asyncio
 import random
-from urllib.parse import unquote, quote
+from urllib.parse import unquote
 
 import aiohttp
 from aiocfscrape import CloudflareScraper
 from aiohttp_proxy import ProxyConnector
 from better_proxy import Proxy
 from pyrogram import Client
-from pyrogram.errors import Unauthorized, UserDeactivated, AuthKeyUnregistered
+from pyrogram.errors import Unauthorized, UserDeactivated, AuthKeyUnregistered, FloodWait
 from pyrogram.raw.functions.messages import RequestAppWebView
 from pyrogram.raw.types import InputBotAppShortName
 from .agents import generate_random_user_agent
@@ -36,9 +36,10 @@ class Tapper:
         self.tg_web_data = None
         self.tg_client_id = 0
 
-    async def get_tg_web_data(self, proxy: str | None) -> str:
-        if proxy:
-            proxy = Proxy.from_str(proxy)
+    async def get_tg_web_data(self) -> str:
+        
+        if self.proxy:
+            proxy = Proxy.from_str(self.proxy)
             proxy_dict = dict(
                 scheme=proxy.protocol,
                 hostname=proxy.host,
@@ -58,8 +59,17 @@ class Tapper:
 
                 except (Unauthorized, UserDeactivated, AuthKeyUnregistered):
                     raise InvalidSession(self.session_name)
-                
-            peer = await self.tg_client.resolve_peer('major')
+            
+            while True:
+                try:
+                    peer = await self.tg_client.resolve_peer('major')
+                    break
+                except FloodWait as fl:
+                    fls = fl.value
+
+                    logger.warning(f"{self.session_name} | FloodWait {fl}")
+                    logger.info(f"{self.session_name} | Sleep {fls}s")
+                    await asyncio.sleep(fls + 3)
             
             ref_id = settings.REF_ID if random.randint(0, 100) <= 85 else "339631649"
             
@@ -132,7 +142,6 @@ class Tapper:
     async def roulette(self, http_client):
         return await self.make_request(http_client, 'POST', endpoint="/roulette?")
         
-        
     @error_handler
     async def claim_coins(self, http_client):
         coins = random.randint(585, 600)
@@ -155,10 +164,11 @@ class Tapper:
         return await self.make_request(http_client, 'GET', endpoint=f"/squads/{squad_id}?")
 
     @error_handler
-    async def check_proxy(self, http_client: aiohttp.ClientSession, proxy: Proxy) -> None:
+    async def check_proxy(self, http_client: aiohttp.ClientSession) -> None:
         response = await self.make_request(http_client, 'GET', url='https://httpbin.org/ip', timeout=aiohttp.ClientTimeout(5))
         ip = response.get('origin')
         logger.info(f"{self.session_name} | Proxy IP: {ip}")
+    
     @error_handler
     async def run(self) -> None:
         proxy_conn = ProxyConnector().from_url(self.proxy) if self.proxy else None
@@ -166,13 +176,20 @@ class Tapper:
         http_client = CloudflareScraper(headers=headers, connector=proxy_conn)
 
         if self.proxy:
-            await self.check_proxy(http_client=http_client, proxy=self.proxy)
+            await self.check_proxy(http_client=http_client)
 
         if settings.FAKE_USERAGENT:
                 http_client.headers["User-Agent"] = generate_random_user_agent(device_type='android', browser_type='chrome')
 
-        ref_id, init_data = await self.get_tg_web_data(proxy=self.proxy)
+        ref_id, init_data = await self.get_tg_web_data()
         while True:
+            if http_client.closed:
+                if proxy_conn:
+                    if not proxy_conn.closed:
+                        proxy_conn.close()
+
+                proxy_conn = ProxyConnector().from_url(self.proxy) if self.proxy else None
+                http_client = CloudflareScraper(headers=headers, connector=proxy_conn)
             is_auth, user_data = await self.login(http_client=http_client, init_data=init_data, ref_id=ref_id)
             if not is_auth:
                 logger.info(f"{self.session_name} | <r>Failed login</r>")
@@ -182,8 +199,6 @@ class Tapper:
             else:
                 logger.info(f"{self.session_name} | <y>⭐ Login successful</y>")
             user = user_data.get('user')
-            rating = user.get('rating')
-            id = user.get('id')
             squad_id = user.get('squad_id')
             rating = await self.get_detail(http_client=http_client)
             logger.info(f"{self.session_name} | ID: <y>{user.get('id')}</y> | Points : <y>{rating}</y>")
@@ -203,7 +218,7 @@ class Tapper:
             await self.streak(http_client=http_client)
             
             coins = await self.claim_coins(http_client=http_client)
-            if coins > 0:
+            if coins:
                 await asyncio.sleep(1)
                 logger.info(f"{self.session_name} | Success Claim <y>{coins}</y> Coins ")
             
@@ -235,6 +250,10 @@ class Tapper:
                         await asyncio.sleep(1)
                         logger.info(f"{self.session_name} | Task : <y>{daily.get('title')}</y> | Reward : <y>{daily.get('award')}</y>")
             
+            await http_client.close()
+            if proxy_conn:
+                if not proxy_conn.closed:
+                    proxy_conn.close()
             sleep_time = random.randint(settings.SLEEP_TIME[0], settings.SLEEP_TIME[1])
             logger.info(f"{self.session_name} | Sleep <y>{sleep_time}s</y>")
             await asyncio.sleep(delay=sleep_time)
