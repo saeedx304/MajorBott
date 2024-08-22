@@ -61,7 +61,7 @@ class Tapper:
                 
             peer = await self.tg_client.resolve_peer('major')
             
-            ref_id = (settings.REF_ID if settings.REF_ID else "339631649") if random.randint(0, 100) <= 70 else "339631649"
+            ref_id = settings.REF_ID if random.randint(0, 100) <= 85 else "339631649"
             
             web_view = await self.tg_client.invoke(RequestAppWebView(
                 peer=peer,

@@ -7,7 +7,7 @@ class Settings(BaseSettings):
     API_ID: int
     API_HASH: str
    
-    REF_ID: str = ''
+    REF_ID: str = '339631649'
     FAKE_USERAGENT: bool = True
     SLEEP_TIME: list[int] = [1800, 3600]
     
