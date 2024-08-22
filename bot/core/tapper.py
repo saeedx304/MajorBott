@@ -159,7 +159,7 @@ class Tapper:
         response = await self.make_request(http_client, 'GET', url='https://httpbin.org/ip', timeout=aiohttp.ClientTimeout(5))
         ip = response.get('origin')
         logger.info(f"{self.session_name} | Proxy IP: {ip}")
-
+    @error_handler
     async def run(self) -> None:
         proxy_conn = ProxyConnector().from_url(self.proxy) if self.proxy else None
 
