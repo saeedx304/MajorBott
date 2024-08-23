@@ -183,19 +183,17 @@ class Tapper:
 
         ref_id, init_data = await self.get_tg_web_data()
         while True:
-            # if http_client.closed:
-                # if proxy_conn:
-                    # if not proxy_conn.closed:
-                        # proxy_conn.close()
-
-                # proxy_conn = ProxyConnector().from_url(self.proxy) if self.proxy else None
-                # http_client = CloudflareScraper(headers=headers, connector=proxy_conn)
+            if settings.USE_RANDOM_DELAY_IN_RUN:
+                random_delay = random.randint(settings.RANDOM_DELAY_IN_RUN[0], settings.RANDOM_DELAY_IN_RUN[1])
+                logger.info(f"{self.session_name} | Bot will start in <y>{random_delay}s</y>")
+                await asyncio.sleep(random_delay)
             is_auth, user_data = await self.login(http_client=http_client, init_data=init_data, ref_id=ref_id)
             if not is_auth:
                 logger.info(f"{self.session_name} | <r>Failed login</r>")
                 sleep_time = random.randint(settings.SLEEP_TIME[0], settings.SLEEP_TIME[1])
                 logger.info(f"{self.session_name} | Sleep <y>{sleep_time}s</y>")
                 await asyncio.sleep(delay=sleep_time)
+                return
             else:
                 logger.info(f"{self.session_name} | <y>⭐ Login successful</y>")
             user = user_data.get('user')
@@ -250,10 +248,6 @@ class Tapper:
                         await asyncio.sleep(1)
                         logger.info(f"{self.session_name} | Task : <y>{daily.get('title')}</y> | Reward : <y>{daily.get('award')}</y>")
             
-            # await http_client.close()
-            # if proxy_conn:
-                # if not proxy_conn.closed:
-                    # proxy_conn.close()
             sleep_time = random.randint(settings.SLEEP_TIME[0], settings.SLEEP_TIME[1])
             logger.info(f"{self.session_name} | Sleep <y>{sleep_time}s</y>")
             await asyncio.sleep(delay=sleep_time)
