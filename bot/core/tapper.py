@@ -9,7 +9,8 @@ from better_proxy import Proxy
 from pyrogram import Client
 from pyrogram.errors import Unauthorized, UserDeactivated, AuthKeyUnregistered, FloodWait
 from pyrogram.raw.functions.messages import RequestAppWebView
-from pyrogram.raw.types import InputBotAppShortName
+from pyrogram.raw.functions import account
+from pyrogram.raw.types import InputBotAppShortName, InputNotifyPeer, InputPeerNotifySettings
 from .agents import generate_random_user_agent
 from bot.config import settings
 from typing import Any, Callable
@@ -96,9 +97,48 @@ class Tapper:
             raise error
 
         except Exception as error:
-            logger.error(f"{self.session_name} | Неизвестная ошибка: {error}")
+            logger.error(f"{self.session_name} | Unknown error: {error}")
             await asyncio.sleep(delay=3)
-            
+        
+        
+    async def join_and_mute_tg_channel(self, link: str):
+        link = link.replace('https://t.me/', "")
+        if not self.tg_client.is_connected:
+            try:
+                await self.tg_client.connect()
+            except Exception as error:
+                logger.error(f"{self.session_name} | (Task) Connect failed: {error}")
+        try:
+            chat = await self.tg_client.get_chat(link)
+            chat_username = chat.username if chat.username else link
+            chat_id = chat.id
+            try:
+                await self.tg_client.get_chat_member(chat_username, "me")
+            except Exception as error:
+                if error.ID == 'USER_NOT_PARTICIPANT':
+                    await asyncio.sleep(delay=3)
+                    response = await self.tg_client.join_chat(link)
+                    logger.info(f"{self.session_name} | Joined to channel: <y>{response.username}</y>")
+                    
+                    try:
+                        peer = await self.tg_client.resolve_peer(chat_id)
+                        await self.tg_client.invoke(account.UpdateNotifySettings(
+                            peer=InputNotifyPeer(peer=peer),
+                            settings=InputPeerNotifySettings(mute_until=2147483647)
+                        ))
+                        logger.info(f"{self.session_name} | Successfully muted chat <y>{chat_username}</y>")
+                    except Exception as e:
+                        logger.info(f"{self.session_name} | (Task) Failed to mute chat <y>{chat_username}</y>: {str(e)}")
+                    
+                    
+                else:
+                    logger.error(f"{self.session_name} | (Task) Error while checking TG group: <y>{chat_username}</y>")
+
+            if self.tg_client.is_connected:
+                await self.tg_client.disconnect()
+        except Exception as error:
+            logger.error(f"{self.session_name} | (Task) Error while join tg channel: {error}")
+
     
     @error_handler
     async def make_request(self, http_client, method, endpoint=None, url=None, **kwargs):
@@ -243,6 +283,10 @@ class Tapper:
             if data_task is not None:
                 for task in data_task:
                     id = task.get('id')
+                    if task.get('type') == 'subscribe_channel':
+                        await self.join_and_mute_tg_channel(link=task.get('payload').get('url'))
+                        await asyncio.sleep(5)
+                    
                     data_done = await self.done_tasks(http_client=http_client, task_id=id)
                     if data_done is not None and data_done.get('is_completed') is True:
                         await asyncio.sleep(1)
