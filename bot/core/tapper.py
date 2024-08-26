@@ -3,7 +3,6 @@ import random
 from urllib.parse import unquote
 
 import aiohttp
-from aiocfscrape import CloudflareScraper
 from aiohttp_proxy import ProxyConnector
 from better_proxy import Proxy
 from pyrogram import Client
@@ -143,9 +142,9 @@ class Tapper:
     @error_handler
     async def make_request(self, http_client, method, endpoint=None, url=None, **kwargs):
         full_url = url or f"https://major.glados.app/api{endpoint or ''}"
-        async with http_client.request(method, full_url, **kwargs) as response:
-            response.raise_for_status()
-            return await response.json()
+        response = await http_client.request(method, full_url, **kwargs)
+        
+        return await response.json()
     
     @error_handler
     async def login(self, http_client, init_data, ref_id):
@@ -211,22 +210,29 @@ class Tapper:
     
     @error_handler
     async def run(self) -> None:
-        proxy_conn = ProxyConnector().from_url(self.proxy) if self.proxy else None
-
-        http_client = CloudflareScraper(headers=headers, connector=proxy_conn)
-
-        if self.proxy:
-            await self.check_proxy(http_client=http_client)
-
-        if settings.FAKE_USERAGENT:
-                http_client.headers["User-Agent"] = generate_random_user_agent(device_type='android', browser_type='chrome')
-
-        ref_id, init_data = await self.get_tg_web_data()
-        while True:
-            if settings.USE_RANDOM_DELAY_IN_RUN:
+        if settings.USE_RANDOM_DELAY_IN_RUN:
                 random_delay = random.randint(settings.RANDOM_DELAY_IN_RUN[0], settings.RANDOM_DELAY_IN_RUN[1])
                 logger.info(f"{self.session_name} | Bot will start in <y>{random_delay}s</y>")
                 await asyncio.sleep(random_delay)
+                
+        proxy_conn = ProxyConnector().from_url(self.proxy) if self.proxy else None
+        http_client = aiohttp.ClientSession(headers=headers, connector=proxy_conn)
+        if self.proxy:
+            await self.check_proxy(http_client=http_client)
+        
+        if settings.FAKE_USERAGENT:            
+            http_client.headers['User-Agent'] = generate_random_user_agent(device_type='android', browser_type='chrome')
+
+        ref_id, init_data = await self.get_tg_web_data()
+        
+        while True:
+            if http_client.closed:
+                if proxy_conn:
+                    if not proxy_conn.closed:
+                        proxy_conn.close()
+
+                proxy_conn = ProxyConnector().from_url(self.proxy) if self.proxy else None
+                http_client = aiohttp.ClientSession(headers=headers, connector=proxy_conn)
             is_auth, user_data = await self.login(http_client=http_client, init_data=init_data, ref_id=ref_id)
             if not is_auth:
                 logger.info(f"{self.session_name} | <r>Failed login</r>")
@@ -290,7 +296,13 @@ class Tapper:
                     data_done = await self.done_tasks(http_client=http_client, task_id=id)
                     if data_done is not None and data_done.get('is_completed') is True:
                         await asyncio.sleep(1)
+            
                         logger.info(f"{self.session_name} | Task : <y>{daily.get('title')}</y> | Reward : <y>{daily.get('award')}</y>")
+            
+            if http_client and not http_client.closed:
+                await http_client.close()
+                if proxy_conn and not proxy_conn.closed:
+                        proxy_conn.close()
             
             sleep_time = random.randint(settings.SLEEP_TIME[0], settings.SLEEP_TIME[1])
             logger.info(f"{self.session_name} | Sleep <y>{sleep_time}s</y>")
