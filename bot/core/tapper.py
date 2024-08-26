@@ -9,6 +9,7 @@ from pyrogram import Client
 from pyrogram.errors import Unauthorized, UserDeactivated, AuthKeyUnregistered, FloodWait
 from pyrogram.raw.functions.messages import RequestAppWebView
 from pyrogram.raw.functions import account
+import json
 from pyrogram.raw.types import InputBotAppShortName, InputNotifyPeer, InputPeerNotifySettings
 from .agents import generate_random_user_agent
 from bot.config import settings
@@ -142,9 +143,9 @@ class Tapper:
     @error_handler
     async def make_request(self, http_client, method, endpoint=None, url=None, **kwargs):
         full_url = url or f"https://major.glados.app/api{endpoint or ''}"
-        response = await http_client.request(method, full_url, **kwargs)
-        
-        return await response.json()
+        async with http_client.request(method, full_url, **kwargs) as response:
+            response.raise_for_status()
+            return await response.json()
     
     @error_handler
     async def login(self, http_client, init_data, ref_id):
@@ -226,13 +227,6 @@ class Tapper:
         ref_id, init_data = await self.get_tg_web_data()
         
         while True:
-            if http_client.closed:
-                if proxy_conn:
-                    if not proxy_conn.closed:
-                        proxy_conn.close()
-
-                proxy_conn = ProxyConnector().from_url(self.proxy) if self.proxy else None
-                http_client = aiohttp.ClientSession(headers=headers, connector=proxy_conn)
             is_auth, user_data = await self.login(http_client=http_client, init_data=init_data, ref_id=ref_id)
             if not is_auth:
                 logger.info(f"{self.session_name} | <r>Failed login</r>")
@@ -298,11 +292,6 @@ class Tapper:
                         await asyncio.sleep(1)
             
                         logger.info(f"{self.session_name} | Task : <y>{daily.get('title')}</y> | Reward : <y>{daily.get('award')}</y>")
-            
-            if http_client and not http_client.closed:
-                await http_client.close()
-                if proxy_conn and not proxy_conn.closed:
-                        proxy_conn.close()
             
             sleep_time = random.randint(settings.SLEEP_TIME[0], settings.SLEEP_TIME[1])
             logger.info(f"{self.session_name} | Sleep <y>{sleep_time}s</y>")
