@@ -1,5 +1,4 @@
 headers = {
-    'Host': 'major.glados.app',
     'Pragma': 'no-cache',
     'Cache-Control': 'no-cache',
     'Sec-Ch-Ua': '"Not/A)Brand";v="8", "Chromium";v="126", "Google Chrome";v="126"',
@@ -10,6 +9,7 @@ headers = {
     'Accept': 'application/json, text/plain, */*',
     'Content-Type': 'application/json',
     'Origin': 'https://major.glados.app',
+    'Referer': 'https://major.glados.app/reward',
     'Sec-Fetch-Site': 'same-origin',
     'Sec-Fetch-Mode': 'cors',
     'Sec-Fetch-Dest': 'empty',
