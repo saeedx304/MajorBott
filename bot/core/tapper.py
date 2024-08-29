@@ -311,16 +311,17 @@ class Tapper:
                             await asyncio.sleep(1)
                 
                             logger.info(f"{self.session_name} | Task : <y>{daily.get('title')}</y> | Reward : <y>{daily.get('award')}</y>")
+                await http_client.close()
+                if proxy_conn:
+                    if not proxy_conn.closed:
+                        proxy_conn.close()
+            
             except InvalidSession as error:
                 raise error
 
             except Exception as error:
                 logger.error(f"{self.session_name} | Unknown error: {error}")
                 await asyncio.sleep(delay=3)
-                await http_client.close()
-                if proxy_conn:
-                    if not proxy_conn.closed:
-                        proxy_conn.close()
                 
                    
             sleep_time = random.randint(settings.SLEEP_TIME[0], settings.SLEEP_TIME[1])
