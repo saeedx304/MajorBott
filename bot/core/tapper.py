@@ -241,6 +241,8 @@ class Tapper:
 
                     proxy_conn = ProxyConnector().from_url(self.proxy) if self.proxy else None
                     http_client = aiohttp.ClientSession(headers=headers, connector=proxy_conn)
+                    if settings.FAKE_USERAGENT:            
+                        http_client.headers['User-Agent'] = generate_random_user_agent(device_type='android', browser_type='chrome')
                 user_data = await self.login(http_client=http_client, init_data=init_data, ref_id=ref_id)
                 if not user_data:
                     logger.info(f"{self.session_name} | <r>Failed login</r>")
