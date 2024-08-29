@@ -190,7 +190,9 @@ class Tapper:
     
     @error_handler
     async def get_detail(self, http_client):
-        return (await self.make_request(http_client, 'GET', endpoint=f"/users/{self.tg_client_id}/")).get('rating', 0)
+        detail = await self.make_request(http_client, 'GET', endpoint=f"/users/{self.tg_client_id}/")
+        
+        return detail.get('rating') if detail else 0
     
     @error_handler
     async def join_squad(self, http_client):
@@ -244,16 +246,18 @@ class Tapper:
                 squad_id = user.get('squad_id')
                 rating = await self.get_detail(http_client=http_client)
                 logger.info(f"{self.session_name} | ID: <y>{user.get('id')}</y> | Points : <y>{rating}</y>")
+                
                 if squad_id is None:
                     await self.join_squad(http_client=http_client)
                     squad_id = "2237841784"
                     await asyncio.sleep(1)
                     
                 data_squad = await self.get_squad(http_client=http_client, squad_id=squad_id)
-                logger.info(f"{self.session_name} | Squad : <y>{data_squad.get('name')}</y> | Member : <y>{data_squad.get('members_count')}</y> | Ratings : <y>{data_squad.get('rating')}</y>")    
+                if data_squad:
+                    logger.info(f"{self.session_name} | Squad : <y>{data_squad.get('name')}</y> | Member : <y>{data_squad.get('members_count')}</y> | Ratings : <y>{data_squad.get('rating')}</y>")    
                 
                 data_visit = await self.visit(http_client=http_client)
-                if data_visit is not None:
+                if data_visit:
                     await asyncio.sleep(1)
                     logger.info(f"{self.session_name} | Daily Streak : <y>{data_visit.get('streak')}</y>")
                 
@@ -265,7 +269,7 @@ class Tapper:
                     logger.info(f"{self.session_name} | Success Claim <y>{coins}</y> Coins ")
                 
                 data_roulette = await self.roulette(http_client=http_client)
-                if data_roulette is not None:
+                if data_roulette:
                     reward = data_roulette.get('rating_award')
                     if reward is not None:
                         await asyncio.sleep(1)
@@ -273,7 +277,7 @@ class Tapper:
                 
                 await asyncio.sleep(1)
                 data_daily = await self.get_daily(http_client=http_client)
-                if data_daily is not None:
+                if data_daily:
                     for daily in reversed(data_daily):
                         id = daily.get('id')
                         title = daily.get('title')
@@ -284,7 +288,7 @@ class Tapper:
                                 logger.info(f"{self.session_name} | Daily Task : <y>{daily.get('title')}</y> | Reward : <y>{daily.get('award')}</y>")
                 
                 data_task = await self.get_tasks(http_client=http_client)
-                if data_task is not None:
+                if data_task:
                     for task in data_task:
                         id = task.get('id')
                         if task.get('type') == 'subscribe_channel':
