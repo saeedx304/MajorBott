@@ -217,11 +217,20 @@ class Tapper:
                 
         proxy_conn = ProxyConnector().from_url(self.proxy) if self.proxy else None
         http_client = aiohttp.ClientSession(headers=headers, connector=proxy_conn)
+        ref_id, init_data = await self.get_tg_web_data()
+        
+        if not init_data:
+            if not http_client.closed:
+                await http_client.close()
+            if proxy_conn:
+                if not proxy_conn.closed:
+                    proxy_conn.close()
+                    
         if self.proxy:
             await self.check_proxy(http_client=http_client)
+            
         if settings.FAKE_USERAGENT:            
             http_client.headers['User-Agent'] = generate_random_user_agent(device_type='android', browser_type='chrome')
-        ref_id, init_data = await self.get_tg_web_data()
         
         while True:
             try:
@@ -232,7 +241,6 @@ class Tapper:
 
                     proxy_conn = ProxyConnector().from_url(self.proxy) if self.proxy else None
                     http_client = aiohttp.ClientSession(headers=headers, connector=proxy_conn)
-
                 user_data = await self.login(http_client=http_client, init_data=init_data, ref_id=ref_id)
                 if not user_data:
                     logger.info(f"{self.session_name} | <r>Failed login</r>")
@@ -300,17 +308,23 @@ class Tapper:
                             await asyncio.sleep(1)
                 
                             logger.info(f"{self.session_name} | Task : <y>{daily.get('title')}</y> | Reward : <y>{daily.get('award')}</y>")
-            finally:
-                if http_client and not http_client.closed:
-                    await http_client.close()
-                    if proxy_conn and not proxy_conn.closed:
-                            proxy_conn.close()                
-            
+            except InvalidSession as error:
+                raise error
+
+            except Exception as error:
+                logger.error(f"{self.session_name} | Unknown error: {error}")
+                await asyncio.sleep(delay=3)
+                await http_client.close()
+                if proxy_conn:
+                    if not proxy_conn.closed:
+                        proxy_conn.close()
+                
+                   
             sleep_time = random.randint(settings.SLEEP_TIME[0], settings.SLEEP_TIME[1])
             logger.info(f"{self.session_name} | Sleep <y>{sleep_time}s</y>")
             await asyncio.sleep(delay=sleep_time)    
             
-            
+        
             
 
 async def run_tapper(tg_client: Client, proxy: str | None):
