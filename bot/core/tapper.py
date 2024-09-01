@@ -310,7 +310,7 @@ class Tapper:
                         if data_done and data_done.get('is_completed') is True:
                             await asyncio.sleep(1)
                 
-                            logger.info(f"{self.session_name} | Task : <y>{daily.get('title')}</y> | Reward : <y>{daily.get('award')}</y>")
+                            logger.info(f"{self.session_name} | Task : <y>{task.get('title')}</y> | Reward : <y>{task.get('award')}</y>")
                 await http_client.close()
                 if proxy_conn:
                     if not proxy_conn.closed:
