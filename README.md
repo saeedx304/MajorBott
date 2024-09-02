@@ -23,6 +23,7 @@
 |:-----------------------:|:--------------------------------------------------------------------------------------:|
 |  **API_ID / API_HASH**  |        Platform data from which to run the Telegram session (default - android)        |
 | **REF_ID**           |                   Your referral id after startapp= (Your telegram ID)                  |
+| **SUBSCRIBE_HIDDEN_CODE** | Subscribe HiddenCode channel 														|
 | **USE_RANDOM_DELAY_IN_RUN**  | Whether to use random delay at startup (True / False)                                               |
 | **RANDOM_DELAY_IN_RUN**      | Random delay at startup (e.g. [0, 15])                                                              |
 | **FAKE_USER AGENT** |                   Use a fake user agent for sessions (True / False)                    |
