@@ -88,9 +88,6 @@ class Tapper:
             me = await self.tg_client.get_me()
             self.tg_client_id = me.id
             
-            if settings.SUBSCRIBE_HIDDEN_CODE:
-                await self.join_and_mute_tg_channel("https://t.me/hidden_coding")
-            
             if self.tg_client.is_connected:
                 await self.tg_client.disconnect()
 
