@@ -1,5 +1,9 @@
 [![Static Badge](https://img.shields.io/badge/Telegram-Channel-Link?style=for-the-badge&logo=Telegram&logoColor=white&logoSize=auto&color=blue)](https://t.me/+jJhUfsfFCn4zZDk0)      [![Static Badge](https://img.shields.io/badge/Telegram-Bot%20Link-Link?style=for-the-badge&logo=Telegram&logoColor=white&logoSize=auto&color=blue)](https://t.me/major/start?startapp=339631649)
 
+![demo](https://github.com/user-attachments/assets/94ab0cfd-07d2-449d-ae41-1a1807402e3e)
+
+
+
 ## Recommendation before use
 
 # 🔥🔥 PYTHON version must be 3.10 🔥🔥
