@@ -292,11 +292,11 @@ class Tapper:
                     for daily in reversed(data_daily):
                         id = daily.get('id')
                         title = daily.get('title')
-                        if title not in ["Donate rating", "Boost Major channel", "TON Transaction"]:
-                            data_done = await self.done_tasks(http_client=http_client, task_id=id)
-                            if data_done and data_done.get('is_completed') is True:
-                                await asyncio.sleep(1)
-                                logger.info(f"{self.session_name} | Daily Task : <y>{daily.get('title')}</y> | Reward : <y>{daily.get('award')}</y>")
+                        #if title not in ["Donate rating", "Boost Major channel", "TON Transaction"]:
+                        data_done = await self.done_tasks(http_client=http_client, task_id=id)
+                        if data_done and data_done.get('is_completed') is True:
+                            await asyncio.sleep(1)
+                            logger.info(f"{self.session_name} | Daily Task : <y>{daily.get('title')}</y> | Reward : <y>{daily.get('award')}</y>")
                 
                 data_task = await self.get_tasks(http_client=http_client)
                 if data_task:
