@@ -290,6 +290,7 @@ class Tapper:
                 data_daily = await self.get_daily(http_client=http_client)
                 if data_daily:
                     for daily in reversed(data_daily):
+                        await asyncio.sleep(10)
                         id = daily.get('id')
                         title = daily.get('title')
                         #if title not in ["Donate rating", "Boost Major channel", "TON Transaction"]:
@@ -301,6 +302,7 @@ class Tapper:
                 data_task = await self.get_tasks(http_client=http_client)
                 if data_task:
                     for task in data_task:
+                        await asyncio.sleep(10)
                         id = task.get('id')
                         if task.get('type') == 'subscribe_channel':
                             await self.join_and_mute_tg_channel(link=task.get('payload').get('url'))
