@@ -166,6 +166,45 @@ class Tapper:
     async def done_tasks(self, http_client, task_id):
         return await self.make_request(http_client, 'POST', endpoint="/tasks/", json={"task_id": task_id})
     
+    @error_handler
+    async def claim_swipe_coins(self, http_client):
+        response = await self.make_request(http_client, 'GET', endpoint="/swipe_coin/")
+        if response and response.get('success') is True:
+            logger.info(f"{self.session_name} | Start game <y>SwipeCoins</y>")
+            coins = random.randint(settings.SWIPE_COIN[0], settings.SWIPE_COIN[1])
+            payload = {"coins": coins }
+            await asyncio.sleep(55)
+            response = await self.make_request(http_client, 'POST', endpoint="/swipe_coin/", json=payload)
+            if response and response.get('success') is True:
+                return coins
+            return 0
+        return 0
+
+    @error_handler
+    async def claim_hold_coins(self, http_client):
+        response = await self.make_request(http_client, 'GET', endpoint="/bonuses/coins/")
+        if response and response.get('success') is True:
+            logger.info(f"{self.session_name} | Start game <y>HoldCoins</y>")
+            coins = random.randint(settings.HOLD_COIN[0], settings.HOLD_COIN[1])
+            payload = {"coins": coins }
+            await asyncio.sleep(55)
+            response = await self.make_request(http_client, 'POST', endpoint="/bonuses/coins/", json=payload)
+            if response and response.get('success') is True:
+                return coins
+            return 0
+        return 0
+
+    @error_handler
+    async def claim_roulette(self, http_client):
+        response = await self.make_request(http_client, 'GET', endpoint="/roulette/")
+        if response and response.get('success') is True:
+            logger.info(f"{self.session_name} | Start game <y>Roulette</y>")
+            await asyncio.sleep(10)
+            response = await self.make_request(http_client, 'POST', endpoint="/roulette/")
+            if response:
+                return response.get('rating_award', 0)
+            return 0
+        return 0
     
     @error_handler
     async def visit(self, http_client):
@@ -174,19 +213,6 @@ class Tapper:
     @error_handler
     async def streak(self, http_client):
         return await self.make_request(http_client, 'POST', endpoint="/user-visits/streak/?")
-    
-    @error_handler
-    async def roulette(self, http_client):
-        return await self.make_request(http_client, 'POST', endpoint="/roulette?")
-        
-    @error_handler
-    async def claim_coins(self, http_client):
-        coins = random.randint(585, 600)
-        payload = {"coins": coins }
-        response = await self.make_request(http_client, 'POST', endpoint="/bonuses/coins/", json=payload)
-        if response and response.get('success') is True:
-            return coins
-        return 0
     
     @error_handler
     async def get_detail(self, http_client):
@@ -274,19 +300,28 @@ class Tapper:
                 
                 await self.streak(http_client=http_client)
                 
-                coins = await self.claim_coins(http_client=http_client)
-                if coins:
+                
+                hold_coins = await self.claim_hold_coins(http_client=http_client)
+                if hold_coins:
                     await asyncio.sleep(1)
-                    logger.info(f"{self.session_name} | Success Claim <y>{coins}</y> Coins ")
+                    logger.info(f"{self.session_name} | Reward HoldCoins: <y>{hold_coins}</y>")
+                await asyncio.sleep(10)
                 
-                data_roulette = await self.roulette(http_client=http_client)
-                if data_roulette:
-                    reward = data_roulette.get('rating_award')
-                    if reward is not None:
-                        await asyncio.sleep(1)
-                        logger.info(f"{self.session_name} | Reward Roulette : <y>{reward}</y>")
                 
-                await asyncio.sleep(1)
+                swipe_coins = await self.claim_swipe_coins(http_client=http_client)
+                if swipe_coins:
+                    await asyncio.sleep(1)
+                    logger.info(f"{self.session_name} | Reward SwipeCoins: <y>{swipe_coins}</y>")
+                await asyncio.sleep(10)
+                
+                
+                roulette = await self.claim_roulette(http_client=http_client)
+                if roulette:
+                    await asyncio.sleep(1)
+                    logger.info(f"{self.session_name} | Reward Roulette : <y>{roulette}</y>")
+                await asyncio.sleep(10)
+                
+                
                 data_daily = await self.get_daily(http_client=http_client)
                 if data_daily:
                     for daily in reversed(data_daily):

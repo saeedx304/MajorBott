@@ -26,6 +26,8 @@
 |        Settings         |                                      Description                                       |
 |:-----------------------:|:--------------------------------------------------------------------------------------:|
 |  **API_ID / API_HASH**  |        Platform data from which to run the Telegram session (default - android)        |
+|    **HOLD_COIN**        |                         Ammount coins in Hold Coin (e.g. [585, 600])             |
+|    **SWIPE_COIN**       |                         Ammount coins in Swipe Coin (e.g. [2000, 3000])          |
 | **REF_ID**           |                   Your referral id after startapp= (Your telegram ID)                  |
 | **USE_RANDOM_DELAY_IN_RUN**  | Whether to use random delay at startup (True / False)                                               |
 | **RANDOM_DELAY_IN_RUN**      | Random delay at startup (e.g. [0, 15])                                                              |
