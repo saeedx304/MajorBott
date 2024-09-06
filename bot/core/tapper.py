@@ -102,7 +102,7 @@ class Tapper:
         
         
     async def join_and_mute_tg_channel(self, link: str):
-        link = link.replace('https://t.me/', "")
+        link = link if 'https://t.me/+' in link else link[13:]
         if not self.tg_client.is_connected:
             try:
                 await self.tg_client.connect()
@@ -113,7 +113,7 @@ class Tapper:
             chat_username = chat.username if chat.username else link
             chat_id = chat.id
             try:
-                await self.tg_client.get_chat_member(chat_username, "me")
+                await self.tg_client.get_chat_member(chat.username, "me")
             except Exception as error:
                 if error.ID == 'USER_NOT_PARTICIPANT':
                     await asyncio.sleep(delay=3)
