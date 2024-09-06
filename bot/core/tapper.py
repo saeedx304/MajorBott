@@ -340,6 +340,8 @@ class Tapper:
                         await asyncio.sleep(10)
                         id = task.get('id')
                         if task.get('type') == 'subscribe_channel':
+                            if not settings.TASKS_WITH_JOIN_CHANNEL:
+                                continue
                             await self.join_and_mute_tg_channel(link=task.get('payload').get('url'))
                             await asyncio.sleep(5)
                         

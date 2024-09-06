@@ -26,6 +26,7 @@
 |        Settings         |                                      Description                                       |
 |:-----------------------:|:--------------------------------------------------------------------------------------:|
 |  **API_ID / API_HASH**  |        Platform data from which to run the Telegram session (default - android)        |
+| **TASKS_WITH_JOIN_CHANNEL** | Whether to perform tasks with joining channels (True / False)                  |
 |    **HOLD_COIN**        |                         Ammount coins in Hold Coin (e.g. [585, 600])             |
 |    **SWIPE_COIN**       |                         Ammount coins in Swipe Coin (e.g. [2000, 3000])          |
 | **REF_ID**           |                   Your referral id after startapp= (Your telegram ID)                  |

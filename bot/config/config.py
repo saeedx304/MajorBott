@@ -8,6 +8,7 @@ class Settings(BaseSettings):
     API_HASH: str
    
     REF_ID: str = '339631649'
+    TASKS_WITH_JOIN_CHANNEL: bool = True
     HOLD_COIN: list[int] = [585, 600]
     SWIPE_COIN: list[int] = [2000, 3000]
     SUBSCRIBE_HIDDEN_CODE: bool = True
