@@ -1,10 +1,10 @@
 headers = {
-    'Host': 'major.glados.app',
+    'Host': 'major.bot',
     'Cache-Control': 'no-cache',
     'Accept': 'application/json, text/plain, */*',
     'Content-Type': 'application/json',
-    'Origin': 'https://major.glados.app',
-    'Referer': 'https://major.glados.app/',
+    'Origin': 'https://major.bot',
+    'Referer': 'https://major.bot/',
     'Sec-Fetch-Site': 'same-site',
     'Sec-Fetch-Mode': 'cors',
     'Sec-Fetch-Dest': 'empty',
