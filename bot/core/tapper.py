@@ -9,11 +9,12 @@ from pyrogram import Client
 from pyrogram.errors import Unauthorized, UserDeactivated, AuthKeyUnregistered, FloodWait
 from pyrogram.raw.functions.messages import RequestAppWebView
 from pyrogram.raw.functions import account
+import time
 import json
 from pyrogram.raw.types import InputBotAppShortName, InputNotifyPeer, InputPeerNotifySettings
 from .agents import generate_random_user_agent
 from bot.config import settings
-from typing import Any, Callable
+from typing import Callable
 import functools
 from bot.utils import logger
 from bot.exceptions import InvalidSession
@@ -103,6 +104,9 @@ class Tapper:
         
     async def join_and_mute_tg_channel(self, link: str):
         link = link if 'https://t.me/+' in link else link[13:]
+        if link == 'money':
+            return
+        
         if not self.tg_client.is_connected:
             try:
                 await self.tg_client.connect()
@@ -137,7 +141,7 @@ class Tapper:
             if self.tg_client.is_connected:
                 await self.tg_client.disconnect()
         except Exception as error:
-            logger.error(f"{self.session_name} | (Task) Error while join tg channel: {error}")
+            logger.error(f"{self.session_name} | (Task) Error while join tg channel: {link} | {error}")
 
     
     @error_handler
@@ -227,6 +231,22 @@ class Tapper:
     @error_handler
     async def get_squad(self, http_client, squad_id):
         return await self.make_request(http_client, 'GET', endpoint=f"/squads/{squad_id}?")
+    
+    @error_handler
+    async def puvel_puzzle(self, http_client):
+        
+        start = await self.make_request(http_client, 'GET', endpoint="/durov/")
+        if start and start.get('success', False):
+            logger.info(f"{self.session_name} | Start game <y>Puzzle</y>")
+            async with aiohttp.ClientSession() as session:
+                async with session.get("https://raw.githubusercontent.com/GravelFire/TWFqb3JCb3RQdXp6bGVEdXJvdg/master/answer.py") as response:
+                    status = response.status
+                    if status == 200:
+                        response_answer = json.loads(await response.text())
+                        if response_answer.get('expires', 0) > int(time.time()):
+                            answer = response_answer.get('answer')
+                            return await self.make_request(http_client, 'POST', endpoint="/durov/", json=answer)
+        return None
 
     @error_handler
     async def check_proxy(self, http_client: aiohttp.ClientSession) -> None:
@@ -311,14 +331,20 @@ class Tapper:
                 swipe_coins = await self.claim_swipe_coins(http_client=http_client)
                 if swipe_coins:
                     await asyncio.sleep(1)
-                    logger.info(f"{self.session_name} | Reward SwipeCoins: <y>{swipe_coins}</y>")
+                    logger.info(f"{self.session_name} | Reward SwipeCoins: <y>+{swipe_coins}⭐</y>")
                 await asyncio.sleep(10)
                 
                 
                 roulette = await self.claim_roulette(http_client=http_client)
                 if roulette:
                     await asyncio.sleep(1)
-                    logger.info(f"{self.session_name} | Reward Roulette : <y>{roulette}</y>")
+                    logger.info(f"{self.session_name} | Reward Roulette : <y>+{roulette}⭐</y>")
+                await asyncio.sleep(10)
+                
+                puzzle = await self.puvel_puzzle(http_client=http_client)
+                if puzzle:
+                    await asyncio.sleep(1)
+                    logger.info(f"{self.session_name} | Reward Puzzle Pavel: <y>+5000⭐</y>")
                 await asyncio.sleep(10)
                 
                 
