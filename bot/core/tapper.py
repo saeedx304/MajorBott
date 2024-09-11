@@ -324,7 +324,7 @@ class Tapper:
                 hold_coins = await self.claim_hold_coins(http_client=http_client)
                 if hold_coins:
                     await asyncio.sleep(1)
-                    logger.info(f"{self.session_name} | Reward HoldCoins: <y>{hold_coins}</y>")
+                    logger.info(f"{self.session_name} | Reward HoldCoins: <y>+{hold_coins}⭐</y>")
                 await asyncio.sleep(10)
                 
                 
