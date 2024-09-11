@@ -18,6 +18,9 @@
 |                      Auto Referral                       |     ✅     |
 |                    Auto Claim Task                       |     ✅     |
 |                     Auto Roulette                        |     ✅     |
+| Auto Hold Coins  					                       |     ✅     |
+| Auto Swipe Coins                   				       |     ✅     |
+| Auto Puzzle Pavel                        				   |     ✅     |
 |                  Auto Daily Streak                       |     ✅     |
 |              Support for pyrogram .session               |     ✅     |
 
