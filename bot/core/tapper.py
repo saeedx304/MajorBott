@@ -97,10 +97,12 @@ class Tapper:
         except InvalidSession as error:
             logger.error(f"{self.session_name} | Invalid session")
             await asyncio.sleep(delay=3)
+            return None, None
 
         except Exception as error:
             logger.error(f"{self.session_name} | Unknown error: {error}")
             await asyncio.sleep(delay=3)
+            return None, None
         
         
     async def join_and_mute_tg_channel(self, link: str):
