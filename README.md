@@ -23,6 +23,7 @@
 | Auto Puzzle Pavel                        				   |     ✅     |
 |                  Auto Daily Streak                       |     ✅     |
 |              Support for pyrogram .session               |     ✅     |
+|        Telethon version support (in telethon branch)     |     ✅     |
 
 
 ## [Settings](https://github.com/GravelFire/MajorBot/blob/main/.env-example/)

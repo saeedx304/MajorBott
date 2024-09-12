@@ -23,6 +23,7 @@
 | Авто Puzzle Pavel                        				   |     ✅     |
 |                     Автоматичесие ежедневная стрики                   |       ✅        |
 |                      Поддержка pyrogram .session                       |       ✅        |
+|             Поддержка Telethon версии (в ветке telethon)               |       ✅        |
 
 
 ## [Настройки](https://github.com/GravelFire/MajorBot/blob/main/.env-example/)
