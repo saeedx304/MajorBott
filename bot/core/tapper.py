@@ -114,36 +114,19 @@ class Tapper:
             await self.tg_client.connect()
 
         try:
-            if link.startswith(('https://t.me/+', 't.me/+')):
-                invite_hash = link.split('/')[-1]
-                chat = await self.tg_client.join_chat(invite_hash)
-            else:
-                link = link.replace('https://t.me/', "").strip()
-                chat = await self.tg_client.join_chat(link)
-
-            chat_username = getattr(chat, 'username', link)
+            chat = await self.tg_client.join_chat(link)
+            
             chat_id = chat.id
+            chat_title = getattr(chat, 'title', link)
 
             await asyncio.sleep(random.randint(5, 10))
 
-            try:
-                await self.tg_client.get_chat_member(chat_id, "me")
-                logger.info(f"{self.session_name} | Already a member of {chat_username}")
-            except Exception:
-                await self.tg_client.join_chat(chat.id)
-                logger.info(f"{self.session_name} | Joined channel: <y>{chat.title}</y>")
-
-            await asyncio.sleep(random.randint(5, 10))
-
-            try:
-                peer = await self.tg_client.resolve_peer(chat_id)
-                await self.tg_client.invoke(account.UpdateNotifySettings(
-                    peer=InputNotifyPeer(peer=peer),
-                    settings=InputPeerNotifySettings(mute_until=2147483647)
-                ))
-                logger.info(f"{self.session_name} | Successfully muted chat <y>{chat_username}</y>")
-            except Exception as mute_error:
-                logger.warning(f"{self.session_name} | Failed to mute chat {chat_username}: {str(mute_error)}")
+            peer = await self.tg_client.resolve_peer(chat_id)
+            await self.tg_client.invoke(account.UpdateNotifySettings(
+                peer=InputNotifyPeer(peer=peer),
+                settings=InputPeerNotifySettings(mute_until=2147483647)
+            ))
+            logger.info(f"{self.session_name} | Successfully joined and muted chat <y>{chat_title}</y>")
 
         except Exception as e:
             logger.error(f"{self.session_name} | Error joining/muting channel {link}: {str(e)}")
