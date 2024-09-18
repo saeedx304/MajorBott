@@ -114,8 +114,16 @@ class Tapper:
             await self.tg_client.connect()
 
         try:
-            chat = await self.tg_client.join_chat(link)
-            
+            try:
+                chat = await self.tg_client.join_chat(link)
+                logger.info(f"{self.session_name} | Successfully joined chat <y>{chat.title}</y>")
+            except Exception as join_error:
+                if "USER_ALREADY_PARTICIPANT" in str(join_error):
+                    logger.info(f"{self.session_name} | Already a member of the chat: {link}")
+                    chat = await self.tg_client.get_chat(link)
+                else:
+                    raise join_error
+
             chat_id = chat.id
             chat_title = getattr(chat, 'title', link)
 
@@ -126,7 +134,7 @@ class Tapper:
                 peer=InputNotifyPeer(peer=peer),
                 settings=InputPeerNotifySettings(mute_until=2147483647)
             ))
-            logger.info(f"{self.session_name} | Successfully joined and muted chat <y>{chat_title}</y>")
+            logger.info(f"{self.session_name} | Successfully muted chat <y>{chat_title}</y>")
 
         except Exception as e:
             logger.error(f"{self.session_name} | Error joining/muting channel {link}: {str(e)}")
