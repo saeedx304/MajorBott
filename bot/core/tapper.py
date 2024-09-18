@@ -38,7 +38,7 @@ class Tapper:
         self.proxy = proxy
         self.tg_web_data = None
         self.tg_client_id = 0
-
+        
     async def get_tg_web_data(self) -> str:
         
         if self.proxy:
@@ -108,45 +108,54 @@ class Tapper:
         
     @error_handler
     async def join_and_mute_tg_channel(self, link: str):
-        await asyncio.sleep(delay=15)
-        if link.startswith('https://t.me/+') or link.startswith('t.me/+'):
-            invite_hash = link.split('/')[-1]
-        else:
-            link = link.replace('https://t.me/', "")
+        await asyncio.sleep(delay=random.randint(15, 30))
         
         if not self.tg_client.is_connected:
             await self.tg_client.connect()
 
-        if 'invite_hash' in locals():
-            chat = await self.tg_client.join_chat(invite_hash)
-        else:
-            try:
-                chat = await self.tg_client.get_chat(link)
-            except UsernameNotOccupied:
-                logger.warning(f"{self.session_name} | Channel {link} does not exist or username is not occupied. Skipping.")
-                return
-            except Exception:
-                chat = await self.tg_client.join_chat(link)
-        
-        chat_username = chat.username if chat.username else link
-        chat_id = chat.id
-
         try:
-            await self.tg_client.get_chat_member(chat_id, "me")
-            logger.info(f"{self.session_name} | Already a member of {chat_username}")
-        except Exception:
-            response = await self.tg_client.join_chat(invite_hash if 'invite_hash' in locals() else link)
-            logger.info(f"{self.session_name} | Joined channel: <y>{response.title}</y>")
+            if link.startswith(('https://t.me/+', 't.me/+')):
+                invite_hash = link.split('/')[-1]
+                chat = await self.tg_client.join_chat(invite_hash)
+            else:
+                link = link.replace('https://t.me/', "").strip()
+                try:
+                    chat = await self.tg_client.get_chat(link)
+                except (UsernameNotOccupied, ValueError):
+                    chat = await self.tg_client.join_chat(link)
 
-        peer = await self.tg_client.resolve_peer(chat_id)
-        await self.tg_client.invoke(account.UpdateNotifySettings(
-            peer=InputNotifyPeer(peer=peer),
-            settings=InputPeerNotifySettings(mute_until=2147483647)
-        ))
-        logger.info(f"{self.session_name} | Successfully muted chat <y>{chat_username}</y>")
+            chat_username = getattr(chat, 'username', link)
+            chat_id = chat.id
 
-        if self.tg_client.is_connected:
-            await self.tg_client.disconnect()
+            await asyncio.sleep(random.randint(5, 10))
+
+            try:
+                await self.tg_client.get_chat_member(chat_id, "me")
+                logger.info(f"{self.session_name} | Already a member of {chat_username}")
+            except Exception:
+                await self.tg_client.join_chat(chat.id)
+                logger.info(f"{self.session_name} | Joined channel: <y>{chat.title}</y>")
+
+            await asyncio.sleep(random.randint(5, 10))
+
+            try:
+                peer = await self.tg_client.resolve_peer(chat_id)
+                await self.tg_client.invoke(account.UpdateNotifySettings(
+                    peer=InputNotifyPeer(peer=peer),
+                    settings=InputPeerNotifySettings(mute_until=2147483647)
+                ))
+                logger.info(f"{self.session_name} | Successfully muted chat <y>{chat_username}</y>")
+            except Exception as mute_error:
+                logger.warning(f"{self.session_name} | Failed to mute chat {chat_username}: {str(mute_error)}")
+
+        except Exception as e:
+            logger.error(f"{self.session_name} | Error joining/muting channel {link}: {str(e)}")
+
+        finally:
+            if self.tg_client.is_connected:
+                await self.tg_client.disconnect()
+
+        await asyncio.sleep(random.randint(10, 20))
 
     
     @error_handler
