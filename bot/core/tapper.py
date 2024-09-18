@@ -119,10 +119,7 @@ class Tapper:
                 chat = await self.tg_client.join_chat(invite_hash)
             else:
                 link = link.replace('https://t.me/', "").strip()
-                try:
-                    chat = await self.tg_client.get_chat(link)
-                except (UsernameNotOccupied, ValueError):
-                    chat = await self.tg_client.join_chat(link)
+                chat = await self.tg_client.join_chat(link)
 
             chat_username = getattr(chat, 'username', link)
             chat_id = chat.id
