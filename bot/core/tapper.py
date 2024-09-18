@@ -112,16 +112,18 @@ class Tapper:
         
         if not self.tg_client.is_connected:
             await self.tg_client.connect()
-
+            
+        parsed_link = link if 'https://t.me/+' in link else link[13:]
         try:
             try:
-                chat = await self.tg_client.join_chat(link)
+                chat = await self.tg_client.join_chat(parsed_link)
                 logger.info(f"{self.session_name} | Successfully joined chat <y>{chat.title}</y>")
             except Exception as join_error:
                 if "USER_ALREADY_PARTICIPANT" in str(join_error):
                     logger.info(f"{self.session_name} | Already a member of the chat: {link}")
-                    chat = await self.tg_client.get_chat(link)
+                    chat = await self.tg_client.get_chat(parsed_link)
                 else:
+                    
                     raise join_error
 
             chat_id = chat.id
