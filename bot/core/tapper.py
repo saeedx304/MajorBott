@@ -6,15 +6,13 @@ import aiohttp
 from aiohttp_proxy import ProxyConnector
 from better_proxy import Proxy
 from pyrogram import Client
-from pyrogram.errors import Unauthorized, UserDeactivated, AuthKeyUnregistered, FloodWait
-from pyrogram.raw.functions.messages import RequestAppWebView
-from pyrogram.raw.functions import account
+from pyrogram.errors import Unauthorized, UserDeactivated, AuthKeyUnregistered, FloodWait, UsernameNotOccupied
+from pyrogram.raw.functions import account, messages
 import time
 import json
 from pyrogram.raw.types import InputBotAppShortName, InputNotifyPeer, InputPeerNotifySettings
 from .agents import generate_random_user_agent
 from bot.config import settings
-from pyrogram.errors import UsernameNotOccupied
 from typing import Callable
 import functools
 from bot.utils import logger
@@ -76,7 +74,7 @@ class Tapper:
             
             ref_id = settings.REF_ID if random.randint(0, 100) <= 85 else "339631649"
             
-            web_view = await self.tg_client.invoke(RequestAppWebView(
+            web_view = await self.tg_client.invoke(messages.RequestAppWebView(
                 peer=peer,
                 app=InputBotAppShortName(bot_id=peer, short_name="start"),
                 platform='android',
@@ -116,27 +114,23 @@ class Tapper:
         parsed_link = link if 'https://t.me/+' in link else link[13:]
         try:
             try:
+                chat = await self.tg_client.get_chat(parsed_link)
+            except UsernameNotOccupied:
                 chat = await self.tg_client.join_chat(parsed_link)
+                
                 logger.info(f"{self.session_name} | Successfully joined chat <y>{chat.title}</y>")
-            except Exception as join_error:
-                if "USER_ALREADY_PARTICIPANT" in str(join_error):
-                    logger.info(f"{self.session_name} | Already a member of the chat: {link}")
-                    chat = await self.tg_client.get_chat(parsed_link)
-                else:
-                    
-                    raise join_error
+                
+                chat_id = chat.id
+                chat_title = getattr(chat, 'title', link)
 
-            chat_id = chat.id
-            chat_title = getattr(chat, 'title', link)
+                await asyncio.sleep(random.randint(5, 10))
 
-            await asyncio.sleep(random.randint(5, 10))
-
-            peer = await self.tg_client.resolve_peer(chat_id)
-            await self.tg_client.invoke(account.UpdateNotifySettings(
-                peer=InputNotifyPeer(peer=peer),
-                settings=InputPeerNotifySettings(mute_until=2147483647)
-            ))
-            logger.info(f"{self.session_name} | Successfully muted chat <y>{chat_title}</y>")
+                peer = await self.tg_client.resolve_peer(chat_id)
+                await self.tg_client.invoke(account.UpdateNotifySettings(
+                    peer=InputNotifyPeer(peer=peer),
+                    settings=InputPeerNotifySettings(mute_until=2147483647)
+                ))
+                logger.info(f"{self.session_name} | Successfully muted chat <y>{chat_title}</y>")
 
         except Exception as e:
             logger.error(f"{self.session_name} | Error joining/muting channel {link}: {str(e)}")
@@ -315,6 +309,7 @@ class Tapper:
                     squad_id = "2237841784"
                     await asyncio.sleep(1)
                     
+                logger.info(f"{self.session_name} | Squad ID: <y>{squad_id}</y>")
                 data_squad = await self.get_squad(http_client=http_client, squad_id=squad_id)
                 if data_squad:
                     logger.info(f"{self.session_name} | Squad : <y>{data_squad.get('name')}</y> | Member : <y>{data_squad.get('members_count')}</y> | Ratings : <y>{data_squad.get('rating')}</y>")    
