@@ -9,6 +9,7 @@ from pyrogram import Client
 from pyrogram.errors import Unauthorized, UserDeactivated, AuthKeyUnregistered, FloodWait
 from pyrogram.raw.functions import account, messages
 import time
+import re
 import json
 from pyrogram.raw.types import InputBotAppShortName, InputNotifyPeer, InputPeerNotifySettings
 from .agents import generate_random_user_agent
@@ -364,7 +365,7 @@ class Tapper:
                     for task in data_task:
                         await asyncio.sleep(10)
                         id = task.get('id')
-                        if task.get('type') == 'subscribe_channel':
+                        if task.get('type') == 'subscribe_channel' or re.findall(r'(Join|Subscribe|Follow).*?channel', task.get('title', ""), re.IGNORECASE):
                             if not settings.TASKS_WITH_JOIN_CHANNEL:
                                 continue
                             await self.join_and_mute_tg_channel(link=task.get('payload').get('url'))
