@@ -113,9 +113,18 @@ class Tapper:
 
         try:
             parsed_link = link if 'https://t.me/+' in link else link[13:]
+            
             chat = await self.tg_client.get_chat(parsed_link)
-            chat_username = getattr(chat, 'username', link)
-            logger.info(f"{self.session_name} | Get channel: <y>{chat_username}</y>")
+            
+            if chat.username:
+                chat_username = chat.username
+            elif chat.id:
+                chat_username = chat.id
+            else:
+                logger.info("Unable to get channel username or id")
+                return
+            
+            logger.info(f"{self.session_name} | Retrieved channel: <y>{chat_username}</y>")
             try:
                 await self.tg_client.get_chat_member(chat_username, "me")
             except Exception as error:
@@ -379,7 +388,7 @@ class Tapper:
                         if result:
                             await asyncio.sleep(1)
                             reward = "+5000⭐" if task_name == 'Puzzle' else f"+{result}⭐"
-                            logger.info(f"{self.session_name} | Reward {task_name}: <y>+{reward}⭐</y>")
+                            logger.info(f"{self.session_name} | Reward {task_name}: <y>{reward}</y>")
                         await asyncio.sleep(10)
                     
                     # Ежедневные задания, которые можно выполнять каждый день
