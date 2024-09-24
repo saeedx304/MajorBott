@@ -171,3 +171,4 @@ sessions/
 user_agents.json
 
 *.json
+bot/config/proxies.txt

@@ -230,6 +230,30 @@ class Tapper:
         return await self.make_request(http_client, 'GET', endpoint=f"/squads/{squad_id}?")
     
     @error_handler
+    async def youtube_answers(self, http_client, task_id, task_title):
+        async with aiohttp.ClientSession() as session:
+            async with session.get("https://raw.githubusercontent.com/GravelFire/TWFqb3JCb3RQdXp6bGVEdXJvdg/master/answer.py") as response:
+                status = response.status
+                if status == 200:
+                    response_data = json.loads(await response.text())
+                    youtube_answers = response_data.get('youtube', {})
+                    if task_title in youtube_answers:
+                        answer = youtube_answers[task_title]
+                        payload = {
+                            "task_id": task_id,
+                            "payload": {
+                                "code": answer
+                            }
+                        }
+                        logger.info(f"{self.session_name} | Attempting YouTube task: <y>{task_title}</y>")
+                        response = await self.make_request(http_client, 'POST', endpoint="/tasks/", json=payload)
+                        if response and response.get('is_completed') is True:
+                            logger.info(f"{self.session_name} | Completed YouTube task: <y>{task_title}</y>")
+                            return True
+        return False
+    
+    
+    @error_handler
     async def puvel_puzzle(self, http_client):
         
         async with aiohttp.ClientSession() as session:
@@ -365,17 +389,22 @@ class Tapper:
                     for task in data_task:
                         await asyncio.sleep(10)
                         id = task.get('id')
-                        if task.get('type') == 'subscribe_channel' or re.findall(r'(Join|Subscribe|Follow).*?channel', task.get('title', ""), re.IGNORECASE):
+                        title = task.get("title", "")
+                        
+                        if task.get("type") == "code":
+                            await self.youtube_answers(http_client=http_client, task_id=id, task_title=title)
+                            continue
+                        
+                        if task.get('type') == 'subscribe_channel' or re.findall(r'(Join|Subscribe|Follow).*?channel', title, re.IGNORECASE):
                             if not settings.TASKS_WITH_JOIN_CHANNEL:
                                 continue
                             await self.join_and_mute_tg_channel(link=task.get('payload').get('url'))
                             await asyncio.sleep(5)
-                        
                         data_done = await self.done_tasks(http_client=http_client, task_id=id)
                         if data_done and data_done.get('is_completed') is True:
                             await asyncio.sleep(1)
                 
-                            logger.info(f"{self.session_name} | Task : <y>{task.get('title')}</y> | Reward : <y>{task.get('award')}</y>")
+                            logger.info(f"{self.session_name} | Task : <y>{title}</y> | Reward : <y>{task.get('award')}</y>")
                 await http_client.close()
                 if proxy_conn:
                     if not proxy_conn.closed:
