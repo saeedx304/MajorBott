@@ -231,8 +231,8 @@ class Tapper:
         return detail.get('rating') if detail else 0
     
     @error_handler
-    async def leave_squad(self, http_client, squad_id):
-        return await self.make_request(http_client, 'POST', endpoint=f"/squads/{squad_id}/leave/?")
+    async def leave_squad(self, http_client):
+        return await self.make_request(http_client, 'POST', endpoint=f"/squads/leave/?")
     
     @error_handler
     async def join_squad(self, http_client, squad_id):
@@ -347,7 +347,7 @@ class Tapper:
                     await asyncio.sleep(1)
                 
                 if squad_id != settings.SQUAD_ID:
-                    await self.leave_squad(http_client=http_client, squad_id=squad_id)
+                    await self.leave_squad(http_client=http_client)
                     await asyncio.sleep(random.randint(5, 7))
                     await self.join_squad(http_client=http_client, squad_id=settings.SQUAD_ID)
                     squad_id = settings.SQUAD_ID
