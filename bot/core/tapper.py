@@ -310,9 +310,12 @@ class Tapper:
                     
         if self.proxy:
             await self.check_proxy(http_client=http_client)
-            
+        
+        fake_user_agent = generate_random_user_agent(device_type='android', browser_type='chrome')
+        
+        
         if settings.FAKE_USERAGENT:            
-            http_client.headers['User-Agent'] = generate_random_user_agent(device_type='android', browser_type='chrome')
+            http_client.headers['User-Agent'] = fake_user_agent
         
         while True:
             try:
@@ -324,7 +327,7 @@ class Tapper:
                     proxy_conn = ProxyConnector().from_url(self.proxy) if self.proxy else None
                     http_client = aiohttp.ClientSession(headers=headers, connector=proxy_conn)
                     if settings.FAKE_USERAGENT:            
-                        http_client.headers['User-Agent'] = generate_random_user_agent(device_type='android', browser_type='chrome')
+                        http_client.headers['User-Agent'] = fake_user_agent
                 
                 user_data = await self.login(http_client=http_client, init_data=init_data, ref_id=ref_id)
                 if not user_data:
