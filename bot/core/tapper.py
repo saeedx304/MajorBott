@@ -21,6 +21,18 @@ from bot.exceptions import InvalidSession
 from .headers import headers
 
 
+global_answers = {}
+
+async def update_answers_periodically():
+    global global_answers
+    while True:
+        with open('answers.json', 'r') as file:
+            global_answers = json.load(file)
+        await asyncio.sleep(7200)  # Sleep for 2 hours
+
+async def initialize_background_tasks():
+    asyncio.create_task(update_answers_periodically())
+
 def error_handler(func: Callable):
     @functools.wraps(func)
     async def wrapper(*args, **kwargs):
@@ -268,11 +280,10 @@ class Tapper:
     
     @error_handler
     async def puvel_puzzle(self, http_client):
-        with open('answers.json', 'r') as file:
-            response_answer = json.load(file)
+        global global_answers
         
-        if response_answer.get('expires', 0) > int(time.time()):
-            answer = response_answer.get('answer')
+        if global_answers.get('expires', 0) > int(time.time()):
+            answer = global_answers.get('answer')
             start = await self.make_request(http_client, 'GET', endpoint="/durov/")
             if start and start.get('success', False):
                 logger.info(f"{self.session_name} | Start game <y>Puzzle</y>")

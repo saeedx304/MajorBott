@@ -2,9 +2,11 @@ import asyncio
 from contextlib import suppress
 
 from bot.utils.launcher import process
+from bot.core.tapper import initialize_background_tasks
 
 
 async def main():
+    await initialize_background_tasks()
     await process()
 
 
